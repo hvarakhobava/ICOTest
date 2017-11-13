@@ -19,6 +19,7 @@ contract Crowdsale {
     mapping(address => uint) amountRaised;
 
     event TokensSold(address to, uint number);
+    event Refund(address to, uint amount, uint tokens);
 
     function Crowdsale() {
         token = HVTestToken();
@@ -44,14 +45,19 @@ contract Crowdsale {
         TokensSold(sender, nTokens);
     }
 
-    function refund(address to) {
+    function refund() {
         require(totalRaisedAmount < softCap && now > endDate);
+        var to = msg.sender;
+        require(amountRaised[to] > 0);
 
         var amt = amountRaised[to];
+        var tokens =  tokenSold[to];
         amountRaised[to] = 0;
         tokenSold[to] = 0;
         totalRaisedAmount -= amt;
         require(to.transfer(amt));
+
+        Refund(to, amt, tokens);
     }
 
     function transfer() {
